@@ -1,0 +1,362 @@
+;; Denizhan Pak
+;; An implementation of Basic Turkish Morphology in Fluid Construction Grammar
+
+;; Initial importing of the FCG package for lisp
+(in-package :fcg)
+
+;; Defining the grammar as a whole. This can be thought of as a base
+;; class of constructions which all constructions will inherit from.
+(def-fcg-constructions basic-turk-morph
+  :feature-types ((args sequence)
+                  (form set-of-predicates)
+                  (meaning set-of-predicates)
+                  (constituents sequence)
+                  (dependents sequence))
+  :hierarchy-features (constituents dependents)
+
+;; Noun Constructions
+(def-fcg-cxn araba-cxn
+             ((?araba-word
+               (args (?x))
+               (sem-cat (sem-class physical-entity))
+               (syn-cat (lex-class noun-stem))
+               (phon-cat (back-vowel +) (vowel-end +)))
+              <-
+              (?araba-word
+               (HASH meaning ((car ?x)))                     
+               --
+               (HASH form ((string ?araba-word  "araba"))))))
+
+(def-fcg-cxn ev-cxn
+             ((?ev-word
+               (args (?x))
+               (sem-cat (sem-class physical-entity))
+               (syn-cat (lex-class noun-stem))
+               (phon-cat (back-vowel -) (vowel-end -)))
+               <-
+               (?ev-word
+                (HASH meaning ((pencil ?x)))
+                --
+                (HASH form ((string ?ev-word "ev"))))))
+
+(def-fcg-cxn kale-cxn
+            ((?kale-word
+              (args (?x))
+              (sem-cat (sem-class physical-entity))
+              (syn-cat (lex-class noun-stem))
+              (phon-cat (back-vowel -) (vowel-end +)))
+              <-
+              (?kale-word
+               (HASH meaning ((castle ?x)))
+               --
+               (HASH form ((string ?kale-word "kale"))))))
+
+(def-fcg-cxn telefon-cxn
+            ((?telefon-word
+              (args (?x))
+              (sem-cat (sem-class physical-entity))
+              (syn-cat (lex-class noun-stem))
+              (phon-cat (back-vowel +) (vowel-end -)))
+              <-
+              (?telefon-word
+               (HASH meaning ((phone ?x)))
+               --
+               (HASH form ((string ?telefon-word "telefon"))))))
+
+
+;; Plural suffix constructions
+(def-fcg-cxn lar-cxn
+            ((?lar-morph
+              (args (?x))
+              (sem-cat (number pl))
+              (syn-cat (lex-class pl-suffix))
+              (phon-cat (back-vowel +) (vowel-end -)))
+              <-
+              (?lar-morph
+               (HASH meaning ((plural ?x)))
+               --
+               (HASH form ((string ?lar-morph "lar"))))))
+
+(def-fcg-cxn ler-cxn
+            ((?ler-morph
+              (args (?x))
+              (sem-cat (number pl))
+              (syn-cat (lex-class pl-suffix))
+              (phon-cat (back-vowel -) (vowel-end -)))
+              <-
+              (?ler-morph
+               (HASH meaning ((plural ?x)))
+               --
+               (HASH form ((string ?ler-morph "ler"))))))
+
+;; Locative suffix constructions
+(def-fcg-cxn da-cxn
+            ((?da-morph
+              (args (?x))
+              (sem-cat (locative +))
+              (syn-cat (lex-class loc-suffix))
+              (phon-cat (back-vowel +) (vowel-end -)))
+              <-
+              (?da-morph
+               (HASH meaning ((location ?x)))
+               --
+               (HASH form ((string ?da-morph "da"))))))
+
+(def-fcg-cxn de-cxn
+            ((?de-morph
+              (args (?x) da)
+              (sem-cat (locative +))
+              (syn-cat (lex-class loc-suffix))
+              (phon-cat (back-vowel -) (vowel-end -)))
+              <-
+              (?de-morph
+               (HASH meaning ((location ?x)))
+               --
+               (HASH form ((string ?de-morph "de"))))))
+
+;; Accusative suffix constructions
+(def-fcg-cxn i-cxn
+            ((?i-morph
+              (args (?x))
+              (sem-cat (accusative +))
+              (syn-cat (lex-class acc-suffix))
+              (phon-cat (back-vowel -) (vowel-end +) (vowel-start -)))
+              <-
+              (?i-morph
+               (HASH meaning ((accusative ?x)))
+               --
+               (HASH form ((string ?i-morph "i"))))))
+
+;; ih indicates the dotless i which is not interpreted in my version of Lisp
+(def-fcg-cxn ih-cxn
+            ((?ih-morph
+              (args (?x))
+              (sem-cat (accusative +))
+              (syn-cat (lex-class acc-suffix))
+              (phon-cat (back-vowel +) (vowel-end +) (vowel-start -)))
+              <-
+              (?ih-morph
+               (HASH meaning ((accusative ?x)))
+               --
+               (HASH form ((string ?ih-morph "ih"))))))
+
+(def-fcg-cxn sih-cxn
+            ((?sih-morph
+              (args (?x))
+              (sem-cat (accusative +))
+              (syn-cat (lex-class acc-suffix))
+              (phon-cat (back-vowel +) (vowel-end +) (vowel-start +)))
+              <-
+              (?sih-morph
+               (HASH meaning ((accusative ?x)))
+               --
+               (HASH form ((string ?sih-morph "sih"))))))
+
+(def-fcg-cxn si-cxn
+            ((?si-morph
+              (args (?x))
+              (sem-cat (accusative +))
+              (syn-cat (lex-class acc-suffix))
+              (phon-cat (back-vowel -) (vowel-end +) (vowel-start +)))
+              <-
+              (?si-morph
+               (HASH meaning ((accusative ?x)))
+               --
+               (HASH form ((string ?si-morph "si"))))))
+
+;; Allostructions for combining constructions
+  (def-fcg-cxn noun-pl-cxn
+               ((?noun-pl
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-pl))
+                 (phon-cat (vowel-end ?ve))
+                 (constituents (?noun-stem ?pl-suffix)))
+                (?noun-stem
+                 (dependents (?pl-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?pl-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-end ?ve))                   
+                 --
+                 (syn-cat (lex-class pl-suffix)))
+                (?noun-pl
+                 --
+                 (HASH form ((meets ?noun-stem ?pl-suffix))))))
+  
+  (def-fcg-cxn noun-acc-cxn
+               ((?noun-acc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-acc))
+                 (phon-cat (vowel-end ?ve))
+                 (constituents (?noun-stem ?acc-suffix)))
+                (?noun-stem
+                 (dependents (?acc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-end ?ve))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?acc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-start ?ve))                  
+                 --
+                 (syn-cat (lex-class acc-suffix)))
+                (?noun-acc
+                 --
+                 (HASH form ((meets ?noun-stem ?acc-suffix))))))
+  
+  (def-fcg-cxn noun-loc-cxn
+               ((?noun-loc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-loc))
+                 (constituents (?noun-stem ?loc-suffix)))
+                (?noun-stem
+                 (dependents (?loc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?loc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))                   
+                 --
+                 (syn-cat (lex-class loc-suffix)))
+                (?noun-loc
+                 --
+                 (HASH form ((meets ?noun-stem ?loc-suffix))))))
+
+  (def-fcg-cxn noun-pl-acc-cxn
+               ((?noun-pl-acc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-pl-acc))
+                 (phon-cat (vowel-end ?ve))
+                 (constituents (?noun-stem ?pl-suffix ?acc-suffix)))
+                (?noun-stem
+                 (dependents (?pl-suffix ?acc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?pl-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-end ?ve))                  
+                 --
+                 (syn-cat (lex-class pl-suffix)))
+                (?acc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-start ?ve))                  
+                 --
+                 (syn-cat (lex-class acc-suffix)))
+                (?noun-pl-acc
+                 --
+                 (HASH form ((sequence ?noun-stem ?pl-suffix ?acc-suffix))))))
+  
+  (def-fcg-cxn noun-pl-loc-cxn
+               ((?noun-pl-loc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-pl-loc))
+                 (constituents (?noun-stem ?pl-suffix ?loc-suffix)))
+                (?noun-stem
+                 (dependents (?pl-suffix ?loc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?pl-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))                  
+                 --
+                 (syn-cat (lex-class pl-suffix)))
+                (?loc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))                  
+                 --
+                 (syn-cat (lex-class loc-suffix)))
+                (?noun-pl-loc
+                 --
+                 (HASH form ((sequence ?noun-stem ?pl-suffix ?loc-suffix))))))
+  
+
+  (def-fcg-cxn noun-acc-loc-cxn
+               ((?noun-acc-loc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-acc-loc))
+                 (constituents (?noun-stem ?acc-suffix ?loc-suffix)))
+                (?noun-stem
+                 (dependents (?acc-suffix ?loc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-end ?ve))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?acc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv) (vowel-start ?ve))
+                 --
+                 (syn-cat (lex-class acc-suffix)))
+                (?loc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))                  
+                 --
+                 (syn-cat (lex-class loc-suffix)))
+                (?noun-acc-loc
+                 --
+                 (HASH form ((sequence ?noun-stem ?acc-suffix ?loc-suffix))))))
+
+  
+  (def-fcg-cxn noun-pl-acc-loc-cxn
+               ((?noun-pl-acc-loc
+                 (args (?x))
+                 (sem-cat (sem-class referring-expression))
+                 (syn-cat (lex-class noun-pl-acc-loc))
+                 (constituents (?noun-stem ?pl-suffix ?acc-suffix ?loc-suffix)))
+                (?noun-stem
+                 (dependents (?pl-suffix ?acc-suffix ?loc-suffix)))
+                <-
+                (?noun-stem
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class noun-stem)))
+                (?pl-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class pl-suffix)))
+                (?acc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))
+                 --
+                 (syn-cat (lex-class acc-suffix)))
+                (?loc-suffix
+                 (args (?x))
+                 (phon-cat (back-vowel ?bv))                  
+                 --
+                 (syn-cat (lex-class loc-suffix)))
+                (?noun-pl-loc-acc
+                 --
+                 (HASH form ((sequence ?noun-stem ?pl-suffix ?acc-suffix ?loc-suffix))))))
+ 
+)
+
+(activate-monitor trace-fcg)
+(comprehend "araba ler i da")
